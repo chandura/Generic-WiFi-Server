@@ -12,6 +12,11 @@ int state = 0;
 const char* host = "http://api.tracey-island.co.uk/esp8266.php"; //edit the host adress, ip address etc.
 String url = "/post/"; int adcvalue=0;
 
+const byte numChars = 200;
+char receivedChars[numChars];   // an array to store the received data
+
+boolean newData = false;
+
 StaticJsonDocument<200> doc;
 
 // HTTP server will listen at port 80
@@ -161,5 +166,75 @@ void setup(void) {
 
 void loop(void) {
   // check for incomming client connections frequently in the main loop:
+  static byte ndx = 0;
+  char endMarker = '}';
+  char rc;
+
+  //StaticJsonDocument<200> doc;
+
+  while (Serial.available() > 0 && newData == false) {
+      //Read the next character on the serial bus
+      rc = Serial.read();
+      Serial.print(rc);  //This has been left in for debugging of the ESP8266 if needed.
+
+      if (rc != endMarker) {
+        //The have not received '{' as a charcter which donotes the end of the code that we are intrested in.
+        //Add the character which has been read in to those previously read in and increment the counter
+        //to get the next character
+        receivedChars[ndx] = rc;
+            ndx++;
+            if (ndx >= numChars) {
+                ndx = numChars - 1;
+            }
+      }
+      else {
+          //We have received a '(' donating that we have received a full JSON String
+          //Make sure that a '(' is added to the string to be processed and
+          receivedChars[ndx] = rc;
+          ndx++;
+          receivedChars[ndx] = '\0'; // terminate the string
+          ndx = 0;
+          newData = true;
+
+          Serial.print("Received characters *");  //This has been left in for debugging of the ESP8266 if needed.
+          Serial.print(receivedChars);            //This has been left in for debugging of the ESP8266 if needed.
+          Serial.println("*");                    //This has been left in for debugging of the ESP8266 if needed.
+          //Serial.flush();                       //This has been left in for debugging of the ESP8266 if needed.
+      }
+  }
+
+  if (newData == true) {
+      //We have a new JSON string to process
+      Serial.print(" New data has been receiced ");  //This has been left in for debugging of the ESP8266 if needed.
+      Serial.println(receivedChars);                 //This has been left in for debugging of the ESP8266 if needed.
+
+      char *json = receivedChars;
+
+      DeserializationError error = deserializeJson(doc, json);
+
+      if (error) {
+          Serial.print("deserializeJson() failed with code ");
+          Serial.println(error.c_str());
+          return;
+      }
+
+      String item = doc["item"];
+      String action = doc["action"];
+      Serial.print("Item to be controlled ");
+      Serial.println(item);
+      Serial.print("Action to be taken ");
+      Serial.println(action);
+
+      if (item == "led") {
+          if (action == "on") {
+              digitalWrite(led, HIGH);
+          } else if (action == "off") {
+              digitalWrite(led, LOW);
+          }
+      }
+
+      newData = false;
+  }
+
   server.handleClient();
 }
