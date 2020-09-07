@@ -12,6 +12,8 @@ int state = 0;
 const char* host = "http://api.tracey-island.co.uk/esp8266.php"; //edit the host adress, ip address etc.
 String url = "/post/"; int adcvalue=0;
 
+String payload;
+
 const byte numChars = 200;
 char receivedChars[numChars];   // an array to store the received data
 
@@ -24,6 +26,38 @@ ESP8266WebServer server(80);
 
 const int led = 2;
 
+void send_information (String item, String action) {
+  StaticJsonDocument<200> doc;
+  payload = "";
+
+  doc["item"] = item;
+  doc["action"] = action;
+  serializeJson(doc, payload);
+
+  Serial.print("The payload to be transmitted is ");
+  Serial.println(payload);
+
+  //This is the start of the code that was working for http
+  //The following is not required at the moment but may be required later
+  //Serial.println("{\"URL\" : \"" + url + "\"}");
+  //String postData = "{\"action\":\"" + passedstate + "\"}";
+  String address = host;
+
+  HTTPClient http;
+  http.begin(address);
+  http.addHeader("Content-Type", "application/json");
+  auto httpCode = http.POST(payload);
+  Serial.print("{\"Return code\" : \"");
+  Serial.print(httpCode);
+  Serial.println("\"}");
+  //Serial.print("The httpCode is ");
+  //Serial.println(httpCode); //Print HTTP return code
+  //Serial.println("I am at the payload call");
+  String payload = http.getString();
+  //Serial.println(payload); //Print request response payload
+  http.end(); //Close connection Serial.println();
+  //This is the end of the code that was working for http
+}
 void handle_led() {
   // get the value of request argument "state" and convert it to an int
   String passedstate = server.arg("state");
@@ -46,32 +80,6 @@ void handle_led() {
   digitalWrite(led, state);
   //server.send(200, "text/plain", String("LED is now ") + ((state)?"on":"off"));
   server.send(200, "text/plain", String("LED is now ") + passedstate);
-
-  //This is the start of the code that was working for http
-  Serial.println("{\"URL\" : \"" + url + "\"}");
-  //Serial.print("Requesting URL: ");
-  //Serial.println(url); //Post Data
-  String postData = "{\"action\":\"" + passedstate + "\"}";
-  String address = host;
-  //String address = host + url;
-
-  //Serial.print("The address is ");
-  //Serial.println(address);
-
-  HTTPClient http;
-  http.begin(address);
-  http.addHeader("Content-Type", "application/json");
-  auto httpCode = http.POST(postData);
-  Serial.print("{\"Return code\" : \"");
-  Serial.print(httpCode);
-  Serial.println("\"}");
-  //Serial.print("The httpCode is ");
-  //Serial.println(httpCode); //Print HTTP return code
-  //Serial.println("I am at the payload call");
-  String payload = http.getString();
-  //Serial.println(payload); //Print request response payload
-  http.end(); //Close connection Serial.println();
-  //This is the end of the code that was working for http
 
 }
 
@@ -184,13 +192,15 @@ void loop(void) {
       Serial.print("Action to be taken ");
       Serial.println(action);
 
-      if (item == "led") {
+      if (item == "ESPLight") {
           if (action == "on") {
               digitalWrite(led, HIGH);
           } else if (action == "off") {
               digitalWrite(led, LOW);
           }
       }
+
+      send_information(item, action);
 
       newData = false;
   }
