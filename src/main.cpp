@@ -73,37 +73,6 @@ void handle_led() {
   http.end(); //Close connection Serial.println();
   //This is the end of the code that was working for http
 
-  //Write out the change of the LED to the software serial port to be picked up by the Arduino.
-  //mySerial.write("LED Switched");
-
-  //Now update the OpenHAB dashboard
-  //Serial.print("Update the dashboard - ");
-  //Serial.println(passedstate);
-
-  //HTTPClient http;
-  //http.begin("https://mark%40fox-smith.co.uk:bY&Ex1Ui6bbn@home.myopenhab.org/rest/items/ESPLight");
-  //http.addHeader("Content-Type", "text/plain");
-  //int httpCode = http.POST("ON");
-  //Serial.print("The http code is ");
-  //Serial.println(httpCode);
-
-  //String payload = http.getString();
-
-  //Serial.print("The payload is - ");
-  //Serial.println(payload);
-
-  //http.end();
-
-  //if (passedstate=="on") {
-      //int httpCode = http.POST("ON");
-      //Serial.print("The http code is ");
-      //Serial.println(httpCode);
-  //} else {
-      //int httpCode = http.POST("OFF");
-      //Serial.print("The http code is ");
-      //Serial.println(httpCode);
-  //}
-
 }
 
 //void handle_image() {
