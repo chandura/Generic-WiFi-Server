@@ -13,6 +13,8 @@ const char* host = "http://api.tracey-island.co.uk/esp8266.php"; //edit the host
 String url = "/post/"; int adcvalue=0;
 
 String payload;
+String action;
+String item;
 
 const byte numChars = 200;
 char receivedChars[numChars];   // an array to store the received data
@@ -33,9 +35,10 @@ void send_information (String item, String action) {
   doc["item"] = item;
   doc["action"] = action;
   serializeJson(doc, payload);
+  Serial.println("");
 
-  Serial.print("The payload to be transmitted is ");
-  Serial.println(payload);
+  //Serial.print("The payload to be transmitted is ");
+  //Serial.println(payload);
 
   //This is the start of the code that was working for http
   //The following is not required at the moment but may be required later
@@ -63,7 +66,6 @@ void handle_led() {
   String passedstate = server.arg("state");
   doc["Received"] = passedstate;
   serializeJson(doc, Serial);
-  Serial.println("");
   //Serial.println("{\"Received\" : \"" + passedstate + "\"}");
   //Serial.println("");
   //Serial.print("Value passed in ");
@@ -71,11 +73,14 @@ void handle_led() {
 
   if (passedstate=="on") {
       state = 1;
+      action="on";
   } else {
       state = 0;
+      action="off";
   }
 
-  //int state = server.arg("state").toInt();
+  item="ESPLight";
+  send_information(item, action);
 
   digitalWrite(led, state);
   //server.send(200, "text/plain", String("LED is now ") + ((state)?"on":"off"));
@@ -84,6 +89,7 @@ void handle_led() {
 }
 
 void setup(void) {
+  Serial.println("Starting ...");
   //Serial.begin(115200);
   Serial.begin(9600);
   //Serial.println("");
@@ -93,6 +99,7 @@ void setup(void) {
   //WiFi.hostname("ESPTest");
 
   // Connect to WiFi network
+  //Serial.println("Attempting to connect to the WiFi");
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
@@ -163,17 +170,17 @@ void loop(void) {
           ndx = 0;
           newData = true;
 
-          Serial.print("Received characters *");  //This has been left in for debugging of the ESP8266 if needed.
-          Serial.print(receivedChars);            //This has been left in for debugging of the ESP8266 if needed.
-          Serial.println("*");                    //This has been left in for debugging of the ESP8266 if needed.
+          //Serial.print("Received characters *");  //This has been left in for debugging of the ESP8266 if needed.
+          //Serial.print(receivedChars);            //This has been left in for debugging of the ESP8266 if needed.
+          //Serial.println("*");                    //This has been left in for debugging of the ESP8266 if needed.
           //Serial.flush();                       //This has been left in for debugging of the ESP8266 if needed.
       }
   }
 
   if (newData == true) {
       //We have a new JSON string to process
-      Serial.print(" New data has been receiced ");  //This has been left in for debugging of the ESP8266 if needed.
-      Serial.println(receivedChars);                 //This has been left in for debugging of the ESP8266 if needed.
+      //Serial.print(" New data has been receiced ");  //This has been left in for debugging of the ESP8266 if needed.
+      //Serial.println(receivedChars);                 //This has been left in for debugging of the ESP8266 if needed.
 
       char *json = receivedChars;
 
@@ -187,10 +194,10 @@ void loop(void) {
 
       String item = doc["item"];
       String action = doc["action"];
-      Serial.print("Item to be controlled ");
-      Serial.println(item);
-      Serial.print("Action to be taken ");
-      Serial.println(action);
+      //Serial.print("Item to be controlled ");
+      //Serial.println(item);
+      //Serial.print("Action to be taken ");
+      //Serial.println(action);
 
       if (item == "ESPLight") {
           if (action == "on") {
