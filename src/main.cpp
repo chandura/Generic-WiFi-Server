@@ -94,6 +94,7 @@ void setup(void) {
   Serial.begin(9600);
   //Serial.println("");
   pinMode(led, OUTPUT);
+  digitalWrite(led, LOW);
 
   //Set a host name to identify the device on the network
   //WiFi.hostname("ESPTest");
