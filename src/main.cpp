@@ -12,6 +12,7 @@ int state = 0;
 const char* host = "http://api.tracey-island.co.uk/esp8266.php"; //edit the host adress, ip address etc.
 String url = "/post/"; int adcvalue=0;
 
+
 String payload;
 String action;
 String item;
@@ -27,6 +28,7 @@ StaticJsonDocument<200> doc;
 ESP8266WebServer server(80);
 
 const int led = 2;
+
 
 void send_information (String item, String action) {
   StaticJsonDocument<200> doc;
@@ -61,11 +63,13 @@ void send_information (String item, String action) {
   http.end(); //Close connection Serial.println();
   //This is the end of the code that was working for http
 }
+
 void handle_led() {
   // get the value of request argument "state" and convert it to an int
   String passedstate = server.arg("state");
   doc["Received"] = passedstate;
   serializeJson(doc, Serial);
+
   //Serial.println("{\"Received\" : \"" + passedstate + "\"}");
   //Serial.println("");
   //Serial.print("Value passed in ");
@@ -90,17 +94,20 @@ void handle_led() {
 
 void setup(void) {
   Serial.println("Starting ...");
+
   //Serial.begin(115200);
   Serial.begin(9600);
   //Serial.println("");
   pinMode(led, OUTPUT);
   digitalWrite(led, LOW);
 
+
   //Set a host name to identify the device on the network
   //WiFi.hostname("ESPTest");
 
   // Connect to WiFi network
   //Serial.println("Attempting to connect to the WiFi");
+
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
@@ -183,6 +190,7 @@ void loop(void) {
       //Serial.print(" New data has been receiced ");  //This has been left in for debugging of the ESP8266 if needed.
       //Serial.println(receivedChars);                 //This has been left in for debugging of the ESP8266 if needed.
 
+
       char *json = receivedChars;
 
       DeserializationError error = deserializeJson(doc, json);
@@ -201,6 +209,7 @@ void loop(void) {
       //Serial.println(action);
 
       if (item == "ESPLight") {
+
           if (action == "on") {
               digitalWrite(led, HIGH);
           } else if (action == "off") {
@@ -209,6 +218,7 @@ void loop(void) {
       }
 
       send_information(item, action);
+
 
       newData = false;
   }
